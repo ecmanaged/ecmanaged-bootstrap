@@ -8,6 +8,7 @@ UUID=
 
 _install_debian() {
   SOURCE_APT_ECM="deb http://apt.ecmanaged.com stable stable"
+  APT_OPS="--force-yes --yes --no-install-recommends -o DPkg::Options::=--force-confold"  
   
   export DEBIAN_FRONTEND=noninteractive
 
@@ -23,8 +24,8 @@ _install_debian() {
   
   # Install Agent and update PuppetLabs repos
   apt-get -y update
-  apt-get install --force-yes --yes --no-install-recommends -o DPkg::Options::=--force-confold ${ECAGENT_PKG}
-  apt-get install --force-yes --yes --no-install-recommends -o DPkg::Options::=--force-confold puppetlabs-release
+  apt-get install ${APT_OPS} ${ECAGENT_PKG}
+  apt-get install ${APT_OPS} puppetlabs-release
   /bin/rm -f /etc/apt/sources.list.d/puppetlabs-stable.list
 }
 
@@ -33,13 +34,26 @@ _install_redhat() {
   _install_yum
 }
 
-_install_fedora() {
-  _install_yum
-}
-
 _install_amazon() {
   RELEASE=6
   _install_redhat
+}
+
+_install_arch() {
+  echo "Not supported"
+}
+
+_install_fedora() {
+  if [ -d /etc/yum.repos.d ]; then
+    echo -e ${SOURCE_YUM_ECM}    > /etc/yum.repos.d/ecmanaged-stable.repo
+    
+  else
+    echo -e ${SOURCE_YUM_ECM}    >> /etc/yum.conf
+  fi
+
+  # Install ECmanaged Agent
+  yum -y clean all
+  yum --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
 _install_yum() {
