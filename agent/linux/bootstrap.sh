@@ -6,7 +6,7 @@ ECAGENT_PATH=/opt/ecmanaged/ecagent
 ECAGENT_INIT=/etc/init.d/ecagentd
 UUID=
 
-_install_debian() {
+__install_debian() {
   SOURCE_APT_ECM="deb http://apt.ecmanaged.com stable stable"
   APT_OPS="--force-yes --yes --no-install-recommends -o DPkg::Options::=--force-confold"  
   
@@ -14,36 +14,36 @@ _install_debian() {
 
   if [ -d /etc/apt/sources.list.d ]; then
     echo ${SOURCE_APT_ECM}    > /etc/apt/sources.list.d/ecmanaged-stable.list
-    
   else
     echo ${SOURCE_APT_ECM}    >> /etc/apt/sources.list
   fi
   
+  # Update
+  apt-get -y update
+  apt-get ${APT_OPS} install wget
+  
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
   
-  # Install Agent and update PuppetLabs repos
-  apt-get -y update
-  apt-get install ${APT_OPS} ${ECAGENT_PKG}
-  apt-get install ${APT_OPS} puppetlabs-release
-  /bin/rm -f /etc/apt/sources.list.d/puppetlabs-stable.list
+  # Install ECM Agent
+  apt-get ${APT_OPS} install ${ECAGENT_PKG}
 }
 
-_install_redhat() {
+__install_redhat() {
   SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-debug-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
-  _install_yum
+  __install_yum
 }
 
-_install_amazon() {
+__install_amazon() {
   RELEASE=6
-  _install_redhat
+  __install_redhat
 }
 
-_install_arch() {
+__install_arch() {
   echo "Not supported"
 }
 
-_install_fedora() {
+__install_fedora() {
   if [ -d /etc/yum.repos.d ]; then
     echo -e ${SOURCE_YUM_ECM}    > /etc/yum.repos.d/ecmanaged-stable.repo
     
@@ -51,12 +51,12 @@ _install_fedora() {
     echo -e ${SOURCE_YUM_ECM}    >> /etc/yum.conf
   fi
 
-  # Install ECmanaged Agent
+  # Install ECM Agent
   yum -y clean all
   yum --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
-_install_yum() {
+__install_yum() {
   SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com\nenabled=1\ngpgcheck=1"
   
   if [ -d /etc/yum.repos.d ]; then
@@ -68,12 +68,12 @@ _install_yum() {
     echo -e ${SOURCE_YUM_EPEL}   >> /etc/yum.conf
   fi
 
-  # Install ECmanaged Agent
+  # Install ECM Agent
   yum -y clean all
   yum --enablerepo=ecmanaged-epel --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
-_get_distrib() {
+__get_distrib() {
   ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 
   if [ -f /etc/lsb-release ]; then
@@ -115,20 +115,21 @@ _get_distrib() {
   fi
 }
 
-_ecagent_check() {
+__ecagent_check() {
   # Start agent if not installed
-  echo "Check ECAgent running..."
+  echo " * Check ECAgent running..."
   /etc/init.d/ecagentd check
 }
 
-_resizefs() {
+__resizefs() {
   # Try to resize filesystem
-  echo "Resizing ROOT filesystem..."
+  echo " * Resizing ROOT filesystem..."
   resize2fs $(df -l /|grep dev|cut -f1 -d' ')
 }
 
-_configure_agent() {
+__ecagent_configure() {
   if [ $UUID ]; then
+  echo " * Configure ECM Agent uuid..."
     ${ECAGENT_INIT} stop > /dev/null 2>&1
     pkill -f ecagent > /dev/null 2>&1
     ${ECAGENT_PATH}/configure.py $UUID
@@ -136,32 +137,40 @@ _configure_agent() {
 }
 
 # main()
-_get_distrib
-echo "Installing ${ECAGENT_PKG} on ${DISTRO} release ${RELEASE} ($ARCH bits)"
+__get_distrib
+echo "Installing ${ECAGENT_PKG} on ${DISTRO} release ${RELEASE} ($ARCH bits)..."
 case ${DISTRO} in
 	Debian|Ubuntu)
-		_install_debian
+		__install_debian
 		;;
+
 	Redhat|Centos)
-		_install_redhat
+		__install_redhat
 		;;
+
 	Fedora)
-		_install_fedora
+		__install_fedora
 		;;
+
 	Amazon)
-		_install_amazon
+		__install_amazon
 		;;
+
 	Suse)
-		_install_suse
+		__install_suse
 		;;
+
 	Arch)
-		_install_arch
+		__install_arch
 		;;
+
 	*)
 		echo "Sorry, no supported distribution"
 		exit
 esac
 
-_configure_agent
-_ecagent_check
-_resizefs
+__ecagent_configure
+__ecagent_check
+__resizefs
+
+echo "Done."
