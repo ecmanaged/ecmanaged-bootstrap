@@ -1,0 +1,6 @@
+cache/*
+idea/
+www/cache/*
+*~
+tools/*
+

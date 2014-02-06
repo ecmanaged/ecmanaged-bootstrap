@@ -93,12 +93,12 @@ _install_yum() {
 
 _install_centos5() {
   REPO_URL="http://yum.puppetlabs.com/el/5/products/i386/puppetlabs-release-5-7.noarch.rpm"
-  _install_centos
+  _install_yum
 }
 
 _install_centos6() {
   REPO_URL="http://yum.puppetlabs.com/el/6/products/i386/puppetlabs-release-6-7.noarch.rpm"
-  _install_centos
+  _install_yum
 }
 
 _install_freebsd() {
