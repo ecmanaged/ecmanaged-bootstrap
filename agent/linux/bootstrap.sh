@@ -29,48 +29,38 @@ __install_debian() {
   apt-get ${APT_OPS} install ${ECAGENT_PKG}
 }
 
-__install_redhat() {
-  SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
-  __install_yum
-}
-
 __install_amazon() {
   RELEASE=6
   __install_redhat
+}
+
+__install_redhat() {
+  SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
+  SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com\nenabled=1\ngpgcheck=1"
+  SOURCE_YUM_CENTOS="[ecmanaged-centos]\nname=CentOS-Base\nmirrorlist=http://mirrorlist.centos.org/?release=${RELEASE}&arch=\$basearch&repo=os\ngpgcheck=0\nenabled=0\ngpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-${RELEASE}\n\n[ecmanaged-centos-updates]\nname=CentOS-Updates\nmirrorlist=http://mirrorlist.centos.org/?release=${RELEASE}&arch=\$basearch&repo=updates\ngpgcheck=0\nenabled=0\ngpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-${RELEASE}\n"
+
+  echo -e ${SOURCE_YUM_ECM}    > /etc/yum.repos.d/ecmanaged-stable.repo
+  echo -e ${SOURCE_YUM_EPEL}   > /etc/yum.repos.d/ecmanaged-epel.repo
+
+  if [ "${DISTRO}" == "Redhat" ]; then
+      # Add centos repo to not subscribed Redhat
+      if subscription-manager list|grep ^Status|grep -q 'Not'; then
+	echo -e ${SOURCE_YUM_CENTOS}   > /etc/yum.repos.d/ecmanaged-centos.repo
+        CENTOS_REPO="--enablerepo=ecmanaged-centos --enablerepo=ecmanaged-centos-updates"
+      fi
+  fi
+
+  # Install ECM Agent
+  yum -y clean all
+  yum --enablerepo=ecmanaged-stable --enablerepo=ecmanaged-epel ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
 __install_arch() {
   echo "Not supported"
 }
 
-__install_fedora() {
-  if [ -d /etc/yum.repos.d ]; then
-    echo -e ${SOURCE_YUM_ECM}    > /etc/yum.repos.d/ecmanaged-stable.repo
-    
-  else
-    echo -e ${SOURCE_YUM_ECM}    >> /etc/yum.conf
-  fi
-
-  # Install ECM Agent
-  yum -y clean all
-  yum --nogpgcheck -y install ${ECAGENT_PKG}
-}
-
-__install_yum() {
-  SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com\nenabled=1\ngpgcheck=1"
-  
-  if [ -d /etc/yum.repos.d ]; then
-    echo -e ${SOURCE_YUM_ECM}    > /etc/yum.repos.d/ecmanaged-stable.repo
-    echo -e ${SOURCE_YUM_EPEL}   > /etc/yum.repos.d/ecmanaged-epel.repo
-    
-  else
-    echo -e ${SOURCE_YUM_ECM}    >> /etc/yum.conf
-    echo -e ${SOURCE_YUM_EPEL}   >> /etc/yum.conf
-  fi
-
-  # Install ECM Agent
-  yum -y clean all
-  yum --enablerepo=ecmanaged-epel --nogpgcheck -y install ${ECAGENT_PKG}
+__install_suse() {
+  echo "Not supported"
 }
 
 __get_distrib() {
@@ -140,33 +130,29 @@ __ecagent_configure() {
 __get_distrib
 echo "Installing ${ECAGENT_PKG} on ${DISTRO} release ${RELEASE} ($ARCH bits)..."
 case ${DISTRO} in
-	Debian|Ubuntu)
-		__install_debian
-		;;
+  Debian|Ubuntu)
+    __install_debian
+    ;;
 
-	Redhat|Centos)
-		__install_redhat
-		;;
+  Redhat|Centos|Fedora)
+    __install_redhat
+    ;;
 
-	Fedora)
-		__install_fedora
-		;;
+  Amazon)
+    __install_amazon
+    ;;
+    
+  Suse)
+    __install_suse
+    ;;
 
-	Amazon)
-		__install_amazon
-		;;
+  Arch)
+    __install_arch
+    ;;
 
-	Suse)
-		__install_suse
-		;;
-
-	Arch)
-		__install_arch
-		;;
-
-	*)
-		echo "Sorry, no supported distribution"
-		exit
+  *)
+    echo "Sorry, no supported distribution"
+    exit
 esac
 
 __ecagent_configure
