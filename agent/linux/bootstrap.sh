@@ -1,7 +1,7 @@
 #!/bin/sh
 
 LOG_FILE=/root/ecm_agent_install.log
-ECAGENT_PKG="ecmanaged-ecagent"
+ECAGENT_PKG=ecmanaged-ecagent
 ECAGENT_PATH=/opt/ecmanaged/ecagent
 ECAGENT_INIT=/etc/init.d/ecagentd
 UUID=
@@ -30,7 +30,7 @@ __install_debian() {
 }
 
 __install_redhat() {
-  SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-debug-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
+  SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
   __install_yum
 }
 
