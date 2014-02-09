@@ -41,14 +41,16 @@ __install_redhat() {
 
   echo -e ${SOURCE_YUM_ECM} > /etc/yum.repos.d/ecmanaged-stable.repo
 
+  # Add centos repo to not subscribed Redhat
   if [ "${DISTRO}" == "Redhat" ]; then
-      # Add centos repo to not subscribed Redhat
       if subscription-manager list|grep ^Status|grep -q 'Not'; then
 	echo -e ${SOURCE_YUM_CENTOS} > /etc/yum.repos.d/ecmanaged-centos.repo
         CENTOS_REPO="--enablerepo=ecmanaged-centos --enablerepo=ecmanaged-centos-updates"
       fi
+  fi
       
-  elif [ "${DISTRO}" != "Fedora" ]; then
+  # Add epel repo if not is Fedora 
+  if [ "${DISTRO}" != "Fedora" ]; then
       echo -e ${SOURCE_YUM_EPEL} > /etc/yum.repos.d/ecmanaged-epel.repo
       ${EPEL_REPO}="--enablerepo=ecmanaged-epel"
   fi
