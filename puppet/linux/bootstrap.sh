@@ -52,7 +52,7 @@ _install_debian() {
 }
 
 _install_apt() {
-  APT_OPS='--force-yes --yes --no-install-recommends -o DPkg::Options::=--force-confold'
+  APT_OPTS='--force-yes --yes --no-install-recommends -o DPkg::Options::=--force-confold'
 
   # Do the initial apt-get update
   echo "Initial apt-get update..."

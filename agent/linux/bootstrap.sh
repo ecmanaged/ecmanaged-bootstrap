@@ -36,23 +36,26 @@ __install_amazon() {
 
 __install_redhat() {
   SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
-  SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com\nenabled=1\ngpgcheck=1"
+  SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com\nenabled=1\ngpgcheck=0"
   SOURCE_YUM_CENTOS="[ecmanaged-centos]\nname=CentOS-Base\nmirrorlist=http://mirrorlist.centos.org/?release=${RELEASE}&arch=\$basearch&repo=os\ngpgcheck=0\nenabled=0\ngpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-${RELEASE}\n\n[ecmanaged-centos-updates]\nname=CentOS-Updates\nmirrorlist=http://mirrorlist.centos.org/?release=${RELEASE}&arch=\$basearch&repo=updates\ngpgcheck=0\nenabled=0\ngpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-${RELEASE}\n"
 
-  echo -e ${SOURCE_YUM_ECM}    > /etc/yum.repos.d/ecmanaged-stable.repo
-  echo -e ${SOURCE_YUM_EPEL}   > /etc/yum.repos.d/ecmanaged-epel.repo
+  echo -e ${SOURCE_YUM_ECM} > /etc/yum.repos.d/ecmanaged-stable.repo
 
   if [ "${DISTRO}" == "Redhat" ]; then
       # Add centos repo to not subscribed Redhat
       if subscription-manager list|grep ^Status|grep -q 'Not'; then
-	echo -e ${SOURCE_YUM_CENTOS}   > /etc/yum.repos.d/ecmanaged-centos.repo
+	echo -e ${SOURCE_YUM_CENTOS} > /etc/yum.repos.d/ecmanaged-centos.repo
         CENTOS_REPO="--enablerepo=ecmanaged-centos --enablerepo=ecmanaged-centos-updates"
       fi
+      
+  elif [ "${DISTRO}" != "Fedora" ]; then
+      echo -e ${SOURCE_YUM_EPEL} > /etc/yum.repos.d/ecmanaged-epel.repo
+      ${EPEL_REPO}="--enablerepo=ecmanaged-epel"
   fi
 
   # Install ECM Agent
   yum -y clean all
-  yum --enablerepo=ecmanaged-stable --enablerepo=ecmanaged-epel ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
+  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
 __install_arch() {
