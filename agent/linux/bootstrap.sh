@@ -65,6 +65,35 @@ __install_arch() {
 }
 
 __install_suse() {
+    DISTRO_REPO="openSUSE_${DISTRO_MAJOR_VERSION}.${DISTRO_MINOR_VERSION}"
+
+    # Is the repository already known
+    $(zypper repos | grep devel_languages_python >/dev/null 2>&1)
+    if [ $? -eq 1 ]; then
+        # zypper does not yet know nothing about devel_languages_python
+        zypper --non-interactive addrepo --refresh \
+            http://download.opensuse.org/repositories/devel:/languages:/python/${DISTRO_REPO}/devel:languages:python.repo || return 1
+    fi
+
+    zypper --gpg-auto-import-keys --non-interactive refresh
+    exitcode=$?
+    if [ $? -ne 0 ] && [ $? -ne 4 ]; then
+        # If the exit code is not 0, and it's not 4(failed to update a
+        # repository) return a failure. Otherwise continue.
+        return 1
+    fi
+
+    if [ $DISTRO_MAJOR_VERSION -eq 12 ] && [ $DISTRO_MINOR_VERSION -eq 3 ]; then
+        # Because patterns-openSUSE-minimal_base-conflicts conflicts with python, lets remove the first one
+        zypper --non-interactive remove patterns-openSUSE-minimal_base-conflicts
+    fi
+
+    zypper --non-interactive install --auto-agree-with-licenses libzmq3 python \
+        python-Jinja2 python-M2Crypto python-PyYAML python-msgpack-python \
+        python-pycrypto python-pyzmq python-xml || return 1
+    return 0   
+}
+
   echo "Not supported"
 }
 
