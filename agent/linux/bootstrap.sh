@@ -94,9 +94,6 @@ __install_suse() {
     return 0   
 }
 
-  echo "Not supported"
-}
-
 __get_distrib() {
   ARCH=$(uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 
