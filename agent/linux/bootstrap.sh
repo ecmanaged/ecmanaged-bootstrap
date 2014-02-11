@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set +e
+
 LOG_FILE=/root/ecm_agent_install.log
 ECAGENT_PKG=ecmanaged-ecagent
 ECAGENT_PATH=/opt/ecmanaged/ecagent
@@ -112,15 +114,15 @@ __get_distrib() {
 
   elif [ -f /etc/fedora-release ]; then
     DISTRO='Fedora'
-    RELEASE=$(rpm -qa|grep release|xargs rpm -q --queryformat '%{VERSION}' |cut -d'-' -f2)
+    RELEASE=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -d'-' -f2)
 
   elif [ -f /etc/centos-release ]; then
     DISTRO='Centos'
-    RELEASE=$(rpm -qa|grep release|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
+    RELEASE=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
     
   elif [ -f /etc/redhat-release ]; then
     DISTRO='Redhat'
-    RELEASE=$(rpm -qa|grep release|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
+    RELEASE=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
   
   elif [ -f /etc/SuSE-release ] ; then
     DISTRO='Suse'

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set +e
 
 if [ "${EUID}0" -ne "00" ]; then
   echo "This script must be run as root." >&2
@@ -29,7 +29,7 @@ _install_ubuntu() {
   # Load up the release information
   . /etc/lsb-release
 
-  REPO_DEB_URL="http://apt.puppetlabs.com/puppetlabs-release-${DISTRIB_CODENAME}.deb"
+  REPO_URL="http://apt.puppetlabs.com/puppetlabs-release-${DISTRIB_CODENAME}.deb"
 
   # Install via APT using REPO
   _install_apt
@@ -45,7 +45,7 @@ _install_debian() {
 
   # Load up the release information
   DISTRIB_CODENAME=$(lsb_release -c -s)
-  REPO_DEB_URL="http://apt.puppetlabs.com/puppetlabs-release-${DISTRIB_CODENAME}.deb"
+  REPO_URL="http://apt.puppetlabs.com/puppetlabs-release-${DISTRIB_CODENAME}.deb"
 
   # Install via APT using REPO
   _install_apt
@@ -64,10 +64,10 @@ _install_apt() {
 
   # Install the PuppetLabs repo
   echo "Configuring PuppetLabs repo..."
-  repo_deb_path=$(mktemp)
-  wget --output-document="${repo_deb_path}" "${REPO_DEB_URL}" 2>/dev/null
+  repo_path=$(mktemp)
+  wget --output-document="${repo_path}" "${REPO_URL}" 2>/dev/null
 
-  dpkg -i "${repo_deb_path}" >/dev/null
+  dpkg -i "${repo_path}" >/dev/null
   apt-get update >/dev/null
 
   # Install Puppet
@@ -78,11 +78,11 @@ _install_apt() {
 _install_yum() {
   # Install puppet labs repo
   echo "Configuring PuppetLabs repo..."
-  repo_path=$(mktemp)
   
   yum -y clean all
   yum --nogpgcheck -y install wget
   
+  repo_path=$(mktemp)
   wget --output-document="${repo_path}" "${REPO_URL}" 2>/dev/null
   rpm -i "${repo_path}" >/dev/null
     
@@ -102,7 +102,7 @@ _install_centos6() {
 }
 
 _install_fedora() {
-  REPO_URL="https://yum.puppetlabs.com/fedora/f${RELEASE}/products/i386/puppetlabs-release-19-2.noarch.rpm"
+  REPO_URL="https://yum.puppetlabs.com/fedora/f${RELEASE}/products/i386/puppetlabs-release-${RELEASE}-${MINOR}.noarch.rpm"
   _install_yum
 }
 
@@ -142,15 +142,16 @@ _get_distrib() {
 
   elif [ -f /etc/fedora-release ]; then
     DISTRO='Fedora'
-    RELEASE=$(rpm -qa|grep release|xargs rpm -q --queryformat '%{VERSION}' |cut -d'-' -f2)
+    RELEASE=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -d'-' -f2)
+    MINOR=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{RELEASE}' |cut -d'-' -f2)
 
   elif [ -f /etc/centos-release ]; then
     DISTRO='Centos'
-    RELEASE=$(rpm -qa|grep release|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
+    RELEASE=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
     
   elif [ -f /etc/redhat-release ]; then
     DISTRO='Redhat'
-    RELEASE=$(rpm -qa|grep release|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
+    RELEASE=$(rpm -qa|grep release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
   
   elif [ -f /etc/SuSE-release ] ; then
     DISTRO='Suse'
