@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 set +e
 
@@ -7,6 +7,8 @@ ECAGENT_PKG=ecmanaged-ecagent
 ECAGENT_PATH=/opt/ecmanaged/ecagent
 ECAGENT_INIT=/etc/init.d/ecagentd
 UUID=
+
+exec > ${LOG_FILE} 2>&1
 
 __install_debian() {
   SOURCE_APT_ECM="deb http://apt.ecmanaged.com stable stable"
@@ -161,6 +163,19 @@ __ecagent_configure() {
 
 # main()
 __get_distrib
+
+
+export LANG="C"
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+# bug: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=439763
+        
+unset PERL_DL_NONLAZY
+unset DEBCONF_REDIR
+unset DEBIAN_FRONTEND
+unset DEBIAN_HAS_FRONTEND
+unset DPKG_NO_TSTP
+
 echo "Installing ${ECAGENT_PKG} on ${DISTRO} release ${RELEASE} ($ARCH bits)..."
 case ${DISTRO} in
   Debian|Ubuntu)
