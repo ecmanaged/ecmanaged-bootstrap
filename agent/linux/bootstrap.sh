@@ -4,6 +4,7 @@ set +e
 
 LOG_FILE=/root/ecm_agent_install.log
 ECAGENT_PKG=ecmanaged-ecagent
+CLOUDINIT_PKG=cloud-init
 ECAGENT_PATH=/opt/ecmanaged/ecagent
 ECAGENT_INIT=/etc/init.d/ecagentd
 UUID=
@@ -25,6 +26,7 @@ __install_debian() {
   # Update
   apt-get -y update
   apt-get ${APT_OPS} install wget
+  apt-get ${APT_OPS} install ${CLOUDINIT_PKG}
   
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
@@ -56,11 +58,12 @@ __install_redhat() {
   # Add epel repo if not is Fedora 
   if [ "${DISTRO}" != "Fedora" ]; then
       echo -e ${SOURCE_YUM_EPEL} > /etc/yum.repos.d/ecmanaged-epel.repo
-      ${EPEL_REPO}="--enablerepo=ecmanaged-epel"
+      EPEL_REPO="--enablerepo=ecmanaged-epel"
   fi
 
   # Install ECM Agent
   yum -y clean all
+  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${CLOUDINIT_PKG}
   yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
@@ -91,6 +94,8 @@ __install_suse() {
         # Because patterns-openSUSE-minimal_base-conflicts conflicts with python, lets remove the first one
         zypper --non-interactive remove patterns-openSUSE-minimal_base-conflicts
     fi
+    
+    zypper --non-interactive install --auto-agree-with-licenses ${CLOUDINIT_PKG}
 
     zypper --non-interactive install --auto-agree-with-licenses libzmq3 python \
         python-Jinja2 python-M2Crypto python-PyYAML python-msgpack-python \
