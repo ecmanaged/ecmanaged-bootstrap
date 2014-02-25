@@ -158,11 +158,10 @@ __resizefs() {
 }
 
 __ecagent_configure() {
-  if [ $UUID ]; then
+  if [ ${UUID} ]; then
   echo " * Configure ECM Agent uuid..."
     ${ECAGENT_INIT} stop > /dev/null 2>&1
-    pkill -f ecagent > /dev/null 2>&1
-    ${ECAGENT_PATH}/configure.py $UUID
+    ${ECAGENT_PATH}/configure.py ${UUID}
   fi
 }
 
