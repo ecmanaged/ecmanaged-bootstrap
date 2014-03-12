@@ -26,7 +26,7 @@ __install_debian() {
   # Update
   apt-get -y update
   apt-get ${APT_OPS} install wget
-  apt-get ${APT_OPS} install ${CLOUDINIT_PKG}
+#  apt-get ${APT_OPS} install ${CLOUDINIT_PKG}
   
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
@@ -63,7 +63,7 @@ __install_redhat() {
 
   # Install ECM Agent
   yum -y clean all
-  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${CLOUDINIT_PKG}
+#  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${CLOUDINIT_PKG}
   yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
@@ -95,7 +95,7 @@ __install_suse() {
         zypper --non-interactive remove patterns-openSUSE-minimal_base-conflicts
     fi
     
-    zypper --non-interactive install --auto-agree-with-licenses ${CLOUDINIT_PKG}
+#    zypper --non-interactive install --auto-agree-with-licenses ${CLOUDINIT_PKG}
 
     zypper --non-interactive install --auto-agree-with-licenses libzmq3 python \
         python-Jinja2 python-M2Crypto python-PyYAML python-msgpack-python \
