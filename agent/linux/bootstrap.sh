@@ -26,7 +26,7 @@ __install_debian() {
   # Update
   apt-get -y update
   apt-get ${APT_OPS} install wget
-#  apt-get ${APT_OPS} install ${CLOUDINIT_PKG}
+  apt-get ${APT_OPS} install --only-upgrade ${CLOUDINIT_PKG}
   
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
