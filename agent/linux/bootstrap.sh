@@ -181,31 +181,40 @@ unset DEBIAN_HAS_FRONTEND
 unset DPKG_NO_TSTP
 
 echo "Installing ${ECAGENT_PKG} on ${DISTRO} release ${RELEASE} ($ARCH bits)..."
-case ${DISTRO} in
-  Debian|Ubuntu)
-    __install_debian
-    ;;
 
-  Redhat|Centos|Fedora)
-    __install_redhat
-    ;;
+for i in $(seq 1 60); do
+  case ${DISTRO} in
+    Debian|Ubuntu)
+      __install_debian
+      ;;
+  
+    Redhat|Centos|Fedora)
+      __install_redhat
+      ;;
+  
+    Amazon)
+      __install_amazon
+      ;;
+      
+    Suse)
+      __install_suse
+      ;;
+  
+    Arch)
+      __install_arch
+      ;;
+  
+    *)
+      echo "Sorry, no supported distribution"
+      exit
+  esac
 
-  Amazon)
-    __install_amazon
-    ;;
-    
-  Suse)
-    __install_suse
-    ;;
+  [ -d /opt/ecmanaged/ecagent ] && break
 
-  Arch)
-    __install_arch
-    ;;
+  echo "Sleeping and trying again..."
+  sleep 30
 
-  *)
-    echo "Sorry, no supported distribution"
-    exit
-esac
+done
 
 __ecagent_configure
 __ecagent_check
