@@ -63,7 +63,6 @@ __install_redhat() {
 
   # Install ECM Agent
   yum -y clean all
-#  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${CLOUDINIT_PKG}
   yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
 }
 
@@ -165,9 +164,23 @@ __ecagent_configure() {
   fi
 }
 
-# main()
-__get_distrib
+__userdata() {
+  echo -n "Executing user deploy script..."
+  script_file=`mktemp`
+  [ $? -eq 0 ] || exit 1
 
+  base64 -d > ${script_file} <<'__EOM__'
+ZWNobyAnTm8gdXNlciBwcm92aWRlZCBzY3JpcHQnCg==
+__EOM__
+
+  chmod +x ${script_file}
+  ${script_file}
+
+  echo "Done. Cleaning up"
+  rm -f ${script_file}
+}
+
+# main()
 
 export LANG="C"
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
@@ -179,6 +192,9 @@ unset DEBCONF_REDIR
 unset DEBIAN_FRONTEND
 unset DEBIAN_HAS_FRONTEND
 unset DPKG_NO_TSTP
+
+__userdata
+__get_distrib
 
 echo "Installing ${ECAGENT_PKG} on ${DISTRO} release ${RELEASE} ($ARCH bits)..."
 
