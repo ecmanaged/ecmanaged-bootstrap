@@ -165,7 +165,8 @@ __ecagent_configure() {
 }
 
 __userdata() {
-# USERDATA PLACEHOLDER
+# Placeholder for userdata
+# @@PLACEHOLDER@@
 }
 
 # main()
