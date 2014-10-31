@@ -165,19 +165,7 @@ __ecagent_configure() {
 }
 
 __userdata() {
-  echo -n "Executing user deploy script..."
-  script_file=`mktemp`
-  [ $? -eq 0 ] || exit 1
-
-  base64 -d > ${script_file} <<'__EOM__'
-ZWNobyAnTm8gdXNlciBwcm92aWRlZCBzY3JpcHQnCg==
-__EOM__
-
-  chmod +x ${script_file}
-  ${script_file}
-
-  echo "Done. Cleaning up"
-  rm -f ${script_file}
+# USERDATA PLACEHOLDER
 }
 
 # main()
