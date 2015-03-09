@@ -144,12 +144,6 @@ __get_distrib() {
   fi
 }
 
-__ecagent_check() {
-  # Start agent if not installed
-  echo " * Check ECAgent running..."
-  /etc/init.d/ecagentd check
-}
-
 __resizefs() {
   # Try to resize filesystem
   echo " * Resizing ROOT filesystem..."
@@ -223,7 +217,6 @@ for i in $(seq 1 60); do
 done
 
 __ecagent_configure
-__ecagent_check
 __resizefs
 
 echo "Done."
