@@ -211,7 +211,7 @@ for i in $(seq 1 60); do
 
   [ -d /opt/ecmanaged/ecagent ] && break
 
-  echo "Sleeping and trying again..."
+  echo "Sleeping to try again..."
   sleep 30
 
 done
