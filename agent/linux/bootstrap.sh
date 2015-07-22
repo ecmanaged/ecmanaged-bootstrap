@@ -38,11 +38,26 @@ __install_debian() {
 __install_amazon() {
   RELEASE=6
   __install_redhat
+
+  # Use twisted 2.6 (no support for psutil on 2.7)
+  if [ ! `which twisted` ]; then
+    sed -e 's/bin\/twistd}/bin\/twistd-2.6}/' -i ${ECAGENT_INIT} >/dev/null 2>&1
+  fi
+    
+  # Use python 2.6 on agent plugins
+  if [ `which python2.6` ]; then
+    sed -e "s/python_interpreter_linux.*/python_interpreter_linux  = \/usr\/bin\/python2.6/" -i ${ECAGENT_PATH}/config/ecagent.init.cfg >/dev/null 2>&1
+    /bin/rm /etc/alternatives/python
+    ln -s /usr/bin/python2.6 /etc/alternatives/python
+  fi
+  
+  # Restart
+  ${ECAGENT_INIT} restart
 }
 
 __install_redhat() {
   SOURCE_YUM_EPEL="[ecmanaged-epel]\nname=Extra Packages for Enterprise Linux \$releasever - \$basearch\n#baseurl=http://download.fedoraproject.org/pub/epel/${RELEASE}/\$basearch\nmirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-${RELEASE}&arch=\$basearch\nfailovermethod=priority\nenabled=0\ngpgcheck=0\ngpgkey=http://download.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-\$releasever"
-  SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com/epel/\$releasever\nenabled=1\ngpgcheck=0"
+  SOURCE_YUM_ECM="[ecmanaged-stable]\nname=ECManaged stable Packages\nbaseurl=http://rpm.ecmanaged.com/epel/${RELEASE}\nenabled=1\ngpgcheck=0"
   SOURCE_YUM_CENTOS="[ecmanaged-centos]\nname=CentOS-Base\nmirrorlist=http://mirrorlist.centos.org/?release=${RELEASE}&arch=\$basearch&repo=os\ngpgcheck=0\nenabled=0\ngpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-${RELEASE}\n\n[ecmanaged-centos-updates]\nname=CentOS-Updates\nmirrorlist=http://mirrorlist.centos.org/?release=${RELEASE}&arch=\$basearch&repo=updates\ngpgcheck=0\nenabled=0\ngpgkey=http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-${RELEASE}\n"
 
   echo -e ${SOURCE_YUM_ECM} > /etc/yum.repos.d/ecmanaged-stable.repo
