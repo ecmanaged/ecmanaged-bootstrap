@@ -3,14 +3,16 @@
 define('PATH', dirname(realpath(__FILE__)));
 $s_bootstrap_file = PATH . '/bootstrap.sh';
 
-$s_uuid = NULL;
+$s_uuid = $s_account = NULL;
 isset($_GET['uuid']) && $s_uuid = $_GET['uuid'];
+isset($_GET['account']) && $s_account = $_GET['account'];
 
 $s_content = @file_get_contents($s_bootstrap_file);
 
 // Repace UUID with uuid (and disable log to a file)
 if($s_uuid) {
   $s_content = str_replace('UUID=','UUID=' . $s_uuid,$s_content);
+  $s_content = str_replace('ACCOUNT=','ACCOUNT=' . $s_account,$s_content);
   $s_content = str_replace('exec > ${LOG_FILE} 2>&1','',$s_content);
 }
 
