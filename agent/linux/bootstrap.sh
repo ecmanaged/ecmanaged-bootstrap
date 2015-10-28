@@ -31,7 +31,7 @@ __install_debian() {
   apt-get ${APT_OPS} install --only-upgrade ${CLOUDINIT_PKG}
 
   # Install dependencies
-  apt-get ${APT_OPS} install sudo python python-crypto debconf python-twisted-core python-protocols python-twisted-web python-configobj python-twisted-words python-psutil python-libxml2 python-simplejson python-httplib2 python-pip python-dbus PackageKit gir1.2-packagekitglib-1.0
+  apt-get ${APT_OPS} install PackageKit gir1.2-packagekitglib-1.0
   
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
@@ -81,9 +81,17 @@ __install_redhat() {
       EPEL_REPO="--enablerepo=ecmanaged-epel"
   fi
 
+  # install dependency
+  yum install pygobject3 PolicyKit PackageKit -y
+
   # Install ECM Agent
   yum -y clean all
-  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
+
+  if [ "${DISTRO}" != "Fedora" ]; then
+    yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
+  else
+    yum --enablerepo=ecmanaged-stable --nogpgcheck -y install ${ECAGENT_PKG}
+  fi
 }
 
 __install_arch() {
