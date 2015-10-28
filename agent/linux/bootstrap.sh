@@ -174,7 +174,7 @@ __ecagent_configure() {
   if [ ${UUID} ]; then
   echo " * Configure ECM Agent uuid..."
     ${ECAGENT_INIT} stop > /dev/null 2>&1
-    ${ECAGENT_PATH}/configure.py --uuid ${UUID} --account-id ${ACCOUNT_ID} --server-group-id {SERVER_GROUP_ID}
+    ${ECAGENT_PATH}/configure.py --uuid ${UUID} --account ${ACCOUNT_ID} --server-groups {SERVER_GROUP_ID}
   fi
 }
 
