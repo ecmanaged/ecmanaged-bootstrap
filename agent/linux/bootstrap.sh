@@ -6,7 +6,7 @@ LOG_FILE=/root/ecm_agent_install.log
 ECAGENT_PKG=ecmanaged-ecagent
 CLOUDINIT_PKG=cloud-init
 ECAGENT_PATH=/opt/ecmanaged/ecagent
-ECAGENT_INIT=/etc/init.d/ecagentd
+ECAGENT_INIT=/opt/ecmanaged/ecagent/init
 UUID=
 ACCOUNT_ID=
 SERVER_GROUP_ID=
@@ -29,6 +29,9 @@ __install_debian() {
   apt-get -y update
   apt-get ${APT_OPS} install wget
   apt-get ${APT_OPS} install --only-upgrade ${CLOUDINIT_PKG}
+
+  # Install dependencies
+  apt-get ${APT_OPS} install sudo python python-crypto debconf python-twisted-core python-protocols python-twisted-web python-configobj python-twisted-words python-psutil python-libxml2 python-simplejson python-httplib2 python-pip python-dbus PackageKit gir1.2-packagekitglib-1.0
   
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
@@ -171,7 +174,7 @@ __ecagent_configure() {
   if [ ${UUID} ]; then
   echo " * Configure ECM Agent uuid..."
     ${ECAGENT_INIT} stop > /dev/null 2>&1
-    ${ECAGENT_PATH}/configure.py --uuid=${UUID} ----account-id=${ACCOUNT_ID} ----server-group-id={SERVER_GROUP_ID}
+    ${ECAGENT_PATH}/configure.py --uuid ${UUID} --account-id ${ACCOUNT_ID} --server-group-id {SERVER_GROUP_ID}
   fi
 }
 
