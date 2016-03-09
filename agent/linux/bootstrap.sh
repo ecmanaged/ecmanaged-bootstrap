@@ -8,6 +8,7 @@ CLOUDINIT_PKG=cloud-init
 ECAGENT_PATH=/opt/ecmanaged/ecagent
 ECAGENT_INIT=/etc/init.d/ecagentd
 UUID=
+ACCOUNT=
 
 exec > ${LOG_FILE} 2>&1
 
@@ -170,6 +171,13 @@ __ecagent_configure() {
   echo " * Configure ECM Agent uuid..."
     ${ECAGENT_INIT} stop > /dev/null 2>&1
     ${ECAGENT_PATH}/configure.py ${UUID}
+  fi
+  
+  if [ ${ACCOUNT} ]; then
+  echo " * Configure ECM Agent account..."
+    ${ECAGENT_PATH}/init stop > /dev/null 2>&1
+    ${ECAGENT_PATH}/configure.py --account ${ACCOUNT}
+    ${ECAGENT_PATH}/init start > /dev/null 2>&1
   fi
 }
 

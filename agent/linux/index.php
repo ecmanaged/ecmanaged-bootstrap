@@ -12,6 +12,11 @@ $s_content = @file_get_contents($s_bootstrap_file);
 // Repace UUID with uuid (and disable log to a file)
 if($s_uuid) {
   $s_content = str_replace('UUID=','UUID=' . $s_uuid,$s_content);
+  $s_content = str_replace('exec > ${LOG_FILE} 2>&1','',$s_content);
+}
+
+// Suppor for both methods
+if($s_account) {
   $s_content = str_replace('ACCOUNT=','ACCOUNT=' . $s_account,$s_content);
   $s_content = str_replace('exec > ${LOG_FILE} 2>&1','',$s_content);
 }
