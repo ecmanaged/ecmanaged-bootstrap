@@ -6,7 +6,7 @@ LOG_FILE=/root/ecm_agent_install.log
 ECAGENT_PKG=ecmanaged-ecagent
 CLOUDINIT_PKG=cloud-init
 ECAGENT_PATH=/opt/ecmanaged/ecagent
-ECAGENT_INIT=/etc/init.d/ecagentd
+ECAGENT_INIT=/opt/ecmanaged/ecagent/init
 UUID=
 ACCOUNT=
 
@@ -28,6 +28,9 @@ __install_debian() {
   apt-get -y update
   apt-get ${APT_OPS} install wget
   apt-get ${APT_OPS} install --only-upgrade ${CLOUDINIT_PKG}
+
+  # Install dependencies
+  apt-get ${APT_OPS} install PackageKit gir1.2-packagekitglib-1.0
   
   # Install ECmanaged key
   wget -q -O- "http://apt.ecmanaged.com/key.asc" | apt-key add - >/dev/null 2>&1
@@ -77,9 +80,17 @@ __install_redhat() {
       EPEL_REPO="--enablerepo=ecmanaged-epel"
   fi
 
+  # install dependency
+  yum install pygobject3 PolicyKit PackageKit -y
+
   # Install ECM Agent
   yum -y clean all
-  yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
+
+  if [ "${DISTRO}" != "Fedora" ]; then
+    yum --enablerepo=ecmanaged-stable ${EPEL_REPO} ${CENTOS_REPO} --nogpgcheck -y install ${ECAGENT_PKG}
+  else
+    yum --enablerepo=ecmanaged-stable --nogpgcheck -y install ${ECAGENT_PKG}
+  fi
 }
 
 __install_arch() {
@@ -170,7 +181,7 @@ __ecagent_configure() {
   if [ ${UUID} ]; then
   echo " * Configure ECM Agent uuid..."
     ${ECAGENT_INIT} stop > /dev/null 2>&1
-    ${ECAGENT_PATH}/configure.py ${UUID}
+    ${ECAGENT_PATH}/configure.py --uuid ${UUID} --account ${ACCOUNT_ID} --server-groups {SERVER_GROUP_ID}
   fi
   
   if [ ${ACCOUNT} ]; then
