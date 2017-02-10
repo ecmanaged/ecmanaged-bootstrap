@@ -147,15 +147,15 @@ __get_distrib() {
 
   elif [ -f /etc/fedora-release ]; then
     DISTRO='Fedora'
-    RELEASE=$(rpm -qa|grep fedora-release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -d'-' -f2)
+    RELEASE=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
 
   elif [ -f /etc/centos-release ]; then
     DISTRO='Centos'
-    RELEASE=$(rpm -qa|grep centos-release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
+    RELEASE=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
     
   elif [ -f /etc/redhat-release ]; then
     DISTRO='Redhat'
-    RELEASE=$(rpm -qa|grep redhat-release|head -n1|xargs rpm -q --queryformat '%{VERSION}' |cut -c -1)
+    RELEASE=$(rpm -q --qf "%{VERSION}" $(rpm -q --whatprovides redhat-release))
   
   elif [ -f /etc/SuSE-release ] ; then
     DISTRO='Suse'
